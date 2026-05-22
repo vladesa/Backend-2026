@@ -1,0 +1,26 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+class BlogPostFactory extends Factory
+{
+    public function definition()
+    {
+        $title = $this->faker->sentence(rand(3, 8), true);
+        $txt = $this->faker->realText(rand(1000, 4000));
+        $date = $this->faker->dateTimeBetween('-3 months', '-2 months');
+
+        return [
+            'category_id'  => rand(1, 11),
+            'user_id'      => (rand(1, 2) == 5) ? 1 : 2,
+            'title'        => $title,
+            'slug'         => Str::slug($title),
+            'excerpt'      => $this->faker->text(rand(40, 100)),
+            'content_raw'  => $txt,
+            'content_html' => $txt,
+        ];
+    }
+}
