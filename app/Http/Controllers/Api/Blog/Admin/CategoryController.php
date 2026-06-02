@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Blog\Admin;
+namespace App\Http\Controllers\Api\Blog\Admin;
 
-use App\Models\BlogCategory;
-use Illuminate\Support\Str;
-//use Illuminate\Http\Request;
-use App\Http\Requests\BlogCategoryUpdateRequest;
 use App\Http\Requests\BlogCategoryCreateRequest;
+use App\Http\Requests\BlogCategoryUpdateRequest;
+use App\Models\BlogCategory;
 use App\Repositories\BlogCategoryRepository;
+use Illuminate\Support\Str;
+
+//use Illuminate\Http\Request;
+
 
 class CategoryController extends BaseController
 {
