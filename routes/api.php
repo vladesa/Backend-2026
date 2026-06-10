@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Публічні контролери
 use App\Http\Controllers\Api\Blog\PostController;
+use App\Http\Controllers\DiggingDeeperController;
 
 
 use App\Http\Controllers\Api\Blog\Admin\CategoryController;
@@ -31,8 +32,16 @@ Route::group($groupData, function () {
         ->only($methods)
         ->names('blog.admin.categories');
 
-    // BlogPost (Лабораторна 8 - ДОДАНО)
+    // BlogPost Лабораторна 8
     Route::apiResource('posts', AdminPostController::class)
         ->except(['show'])
         ->names('blog.admin.posts');
+
+});
+Route::group(['prefix' => 'digging_deeper'], function () {
+    Route::get('process-video', [\App\Http\Controllers\DiggingDeeperController::class, 'processVideo'])
+        ->name('digging_deeper.processVideo');
+
+    Route::get('prepare-catalog', [\App\Http\Controllers\DiggingDeeperController::class, 'prepareCatalog'])
+        ->name('digging_deeper.prepareCatalog');
 });
