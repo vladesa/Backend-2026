@@ -18,9 +18,9 @@ class PostController extends BaseController
      */
     public function index()
     {
-        $paginator = $this->blogPostRepository->getAllWithPaginate();
+        $posts = \App\Models\BlogPost::with(['user', 'category'])->paginate(15);
 
-        return $paginator;
+        return response()->json($posts);
     }
 
     public function store(Request $request) { }

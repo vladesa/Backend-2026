@@ -5,22 +5,14 @@ namespace App\Repositories;
 use App\Models\BlogPost as Model;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Class BlogPostRepository.
- */
 class BlogPostRepository extends CoreRepository
 {
     protected function getModelClass()
     {
-        return Model::class; // абстрагування моделі BlogPost
+        return Model::class;
     }
 
-    /**
-     * Отримати список статей
-     *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    public function getAllWithPaginate()
+    public function getAllWithPaginate($perPage = 15, $search = '')
     {
         $columns = [
             'id',
@@ -32,27 +24,23 @@ class BlogPostRepository extends CoreRepository
             'category_id'
         ];
 
-        $result = $this->startConditions()
+        $query = $this->startConditions()
             ->select($columns)
             ->orderBy('id', 'DESC')
             ->with([
                 'category' => function ($query) {
                     $query->select(['id', 'title']);
                 },
-                //'category:id,title',
                 'user:id,name',
-            ])
-            ->paginate(25);
+            ]);
 
-        return $result;
+        if (!empty($search)) {
+            $query->where('title', 'LIKE', $search . '%');
+        }
+
+        return $query->paginate($perPage);
     }
 
-    /**
-     * Отримати модель для редагування в адмінці
-     *
-     * @param int $id
-     * @return Model
-     */
     public function getEdit($id)
     {
         return $this->startConditions()->find($id);

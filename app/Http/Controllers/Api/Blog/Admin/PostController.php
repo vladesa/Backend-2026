@@ -11,9 +11,11 @@ use App\Http\Requests\BlogPostCreateRequest;
 use App\Jobs\BlogPostAfterCreateJob;
 use App\Jobs\BlogPostAfterDeleteJob;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+
 class PostController extends BaseController
 {
     use DispatchesJobs;
+
     public function __construct(
         private BlogPostRepository $blogPostRepository,
         private BlogCategoryRepository $blogCategoryRepository
@@ -21,24 +23,21 @@ class PostController extends BaseController
         // parent::__construct();
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $paginator = $this->blogPostRepository->getAllWithPaginate();
+        $perPage = $request->query('per_page', 15);
+        $search = $request->query('search', '');
 
-        return $paginator;
+        $paginator = $this->blogPostRepository->getAllWithPaginate($perPage, $search);
+
+        return response()->json($paginator);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(BlogPostCreateRequest $request)
     {
-        $data = $request->input(); // отримаємо масив даних, які надійшли з форми
+        $data = $request->input();
 
-        $item = (new BlogPost())->create($data); // створюємо об'єкт і додаємо в БД
+        $item = (new BlogPost())->create($data);
 
         if ($item) {
             $job = new BlogPostAfterCreateJob($item);
@@ -50,49 +49,37 @@ class PostController extends BaseController
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(BlogPostUpdateRequest $request, string $id)
     {
         $item = $this->blogPostRepository->getEdit($id);
 
-        if (empty($item)) { //якщо ід не знайдено
+        if (empty($item)) {
             return ['message' => "Запис id=[{$id}] не знайдено"];
         }
 
-        $data = $request->all(); //отримаємо масив даних, які надійшли з форми
+        $data = $request->all();
 
-
-
-        $result = $item->update($data); //оновлюємо дані об'єкта і зберігаємо в БД
+        $result = $item->update($data);
 
         if ($result) {
             return [
                 'success' => true,
                 'message' => 'Успішно збережено',
-                'data'    => $item // ОЦЕЙ РЯДОК ПОВЕРНЕ ВСІ ДАНІ СТАТТІ!
+                'data'    => $item
             ];
-        }
-        else {
+        } else {
             return ['message' => 'Помилка збереження'];
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $result = BlogPost::destroy($id); // софт деліт, запис лишається в БД, але не виводиться
+        $result = BlogPost::destroy($id);
 
         if ($result) {
             BlogPostAfterDeleteJob::dispatch($id)->delay(20);
