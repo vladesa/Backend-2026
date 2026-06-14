@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Blog\PostController;
 use App\Http\Controllers\DiggingDeeperController;
 
-
 use App\Http\Controllers\Api\Blog\Admin\CategoryController;
-use App\Http\Controllers\Api\Blog\Admin\PostController as AdminPostController; // <--- Використовуємо псевдонім!
+use App\Http\Controllers\Api\Blog\Admin\PostController as AdminPostController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,12 +31,12 @@ Route::group($groupData, function () {
         ->only($methods)
         ->names('blog.admin.categories');
 
-    // BlogPost Лабораторна 8
+    // BlogPost Лабораторна 8-16
     Route::apiResource('posts', AdminPostController::class)
-        ->except(['show'])
         ->names('blog.admin.posts');
 
 });
+
 Route::group(['prefix' => 'digging_deeper'], function () {
     Route::get('process-video', [\App\Http\Controllers\DiggingDeeperController::class, 'processVideo'])
         ->name('digging_deeper.processVideo');

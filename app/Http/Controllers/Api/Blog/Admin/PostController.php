@@ -51,7 +51,15 @@ class PostController extends BaseController
 
     public function show(string $id)
     {
-        //
+        // Звертаємося до моделі напряму, щоб гарантовано витягнути статтю і обійти фільтри репозиторію
+        $item = BlogPost::find($id);
+
+        if (!$item) {
+            return response()->json(['message' => "Запис id=[{$id}] не знайдено"], 404);
+        }
+
+        // Віддаємо статтю на фронтенд
+        return response()->json($item);
     }
 
     public function update(BlogPostUpdateRequest $request, string $id)
