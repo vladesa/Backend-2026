@@ -12,6 +12,9 @@ use App\Jobs\BlogPostAfterCreateJob;
 use App\Jobs\BlogPostAfterDeleteJob;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
+// 🔥 1. Підключаємо наш новий ресурс (як вимагає крок 3)
+use App\Http\Resources\Api\Blog\Admin\PostResource;
+
 class PostController extends BaseController
 {
     use DispatchesJobs;
@@ -28,9 +31,11 @@ class PostController extends BaseController
         $perPage = $request->query('per_page', 15);
         $search = $request->query('search', '');
 
+        // Отримуємо пагіновані дані з репозиторія
         $paginator = $this->blogPostRepository->getAllWithPaginate($perPage, $search);
 
-        return response()->json($paginator);
+        // 🔥 2. Обгортаємо пагінацію в API Ресурс замість звичайного response()->json()
+        return PostResource::collection($paginator);
     }
 
     public function store(BlogPostCreateRequest $request)
@@ -51,15 +56,14 @@ class PostController extends BaseController
 
     public function show(string $id)
     {
-        // Звертаємося до моделі напряму, щоб гарантовано витягнути статтю і обійти фільтри репозиторію
         $item = BlogPost::find($id);
 
         if (!$item) {
             return response()->json(['message' => "Запис id=[{$id}] не знайдено"], 404);
         }
 
-        // Віддаємо статтю на фронтенд
-        return response()->json($item);
+        // 🔥 3. Обгортаємо окрему статтю в API Ресурс
+        return new PostResource($item);
     }
 
     public function update(BlogPostUpdateRequest $request, string $id)
