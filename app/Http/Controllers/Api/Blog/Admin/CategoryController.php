@@ -8,9 +8,7 @@ use App\Models\BlogCategory;
 use App\Repositories\BlogCategoryRepository;
 use Illuminate\Support\Str;
 use App\Http\Resources\Api\Blog\Admin\CategoryResource;
-
-//use Illuminate\Http\Request;
-
+use Illuminate\Http\Request;
 
 class CategoryController extends BaseController
 {
@@ -18,74 +16,80 @@ class CategoryController extends BaseController
     {
         // parent::__construct();
     }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    // 🔥 ЗМІНЕНО: Тепер метод приймає Request від нашого Nuxt
+    public function index(Request $request)
     {
+        // Витягуємо параметри пошуку та пагінації (за замовчуванням 15)
+        $perPage = $request->query('per_page', 15);
+        $search = $request->query('search', '');
 
-        $paginator = $this->blogCategoryRepository->getAllWithPaginate(15); // Або як у тебе там написано
-
+        // Передаємо їх у репозиторій, щоб база даних відфільтрувала результат
+        $paginator = $this->blogCategoryRepository->getAllWithPaginate($perPage, $search);
 
         return CategoryResource::collection($paginator);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(BlogCategoryCreateRequest $request)
     {
-        $data = $request->input(); // отримуємо масив даних, які надійшли з форми
-
-
-
-        $item = (new BlogCategory())->create($data); // створюємо об'єкт і додаємо в БД
+        $data = $request->input();
+        $item = (new BlogCategory())->create($data);
 
         if ($item) {
             return [
                 'success' => true,
                 'message' => 'Успішно збережено',
-                'data' => $item // Залишаємо вивід даних, бо це круто!
+                'data' => $item
             ];
         } else {
-            return ['message' => 'Помилка збереження'];
+            return response()->json(['message' => 'Помилка збереження'], 500);
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
+    public function show(string $id)
+    {
+        $item = BlogCategory::find($id);
+
+        if (!$item) {
+            return response()->json(['message' => "Запис id=[{$id}] не знайдено"], 404);
+        }
+
+        return new CategoryResource($item);
+    }
+
     public function update(BlogCategoryUpdateRequest $request, $id)
     {
         $item = $this->blogCategoryRepository->getEdit($id);
 
-        if (empty($item)) { // якщо id не знайдено
-            return back()
-                ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"])
-                ->withInput();
+
+        if (empty($item)) {
+            return response()->json(['message' => "Запис id=[{$id}] не знайдено"], 404);
         }
 
-        $data = $request->all(); // отримаємо масив даних
-
-
-
-        $result = $item->update($data); // оновлюємо дані
+        $data = $request->all();
+        $result = $item->update($data);
 
         if ($result) {
             return [
-                'success' => 'Успішно збережено',
+                'success' => true,
+                'message' => 'Успішно оновлено',
                 'data' => $item
             ];
         } else {
-            return ['msg' => 'Помилка збереження'];
+            return response()->json(['message' => 'Помилка збереження'], 500);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
+        $result = BlogCategory::destroy($id);
 
+        if ($result) {
+            return ['success' => true, 'message' => "Категорію id=[{$id}] успішно видалено"];
+        } else {
+            return response()->json(['message' => 'Помилка видалення'], 500);
+        }
     }
 }

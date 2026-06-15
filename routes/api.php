@@ -25,13 +25,11 @@ $groupData = [
 ];
 
 Route::group($groupData, function () {
-    // BlogCategory (Лабораторні 4-7)
-    $methods = ['index', 'store', 'update'];
+    // BlogCategory (Лабораторні 4-18) - РОЗБЛОКОВАНО ВСІ МЕТОДИ
     Route::apiResource('categories', CategoryController::class)
-        ->only($methods)
         ->names('blog.admin.categories');
 
-    // BlogPost Лабораторна 8-16
+    // BlogPost Лабораторна 8-18
     Route::apiResource('posts', AdminPostController::class)
         ->names('blog.admin.posts');
 
